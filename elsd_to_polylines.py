@@ -183,16 +183,16 @@ def decimate_ellipse_(E, delta):
 
     theta_1 = 0
     delta_theta = 2*math.pi
-    E = (x1, x2, rx, ry, phi, theta_1, delta_theta)
+    E = (x1, y1, rx, ry, phi, theta_1, delta_theta)
 
     rad_delta = delta / max(rx, ry)
-    pts = decimate_centered_ellipse(E, rad_delta)
+    pts = decimate_centered_ellipse_(E, rad_delta)
     return resample_curve(pts, delta)
 
 def decimate_circle_(C, delta):
     cx, cy, rx, ry = C
     E = (cx, cy, 0, rx, ry)
-    return decimate_ellipse(E, delta)
+    return decimate_ellipse_(E, delta)
 
 def parse_geometry_string_(string, delta):
     if string.startswith("<line"):
@@ -212,14 +212,14 @@ def parse_geometry_string_(string, delta):
         P = map(float, g)
         return decimate_ellipse_path_(P, delta)
     elif string.startswith("<ellipse transform"):
-        pattern = re.compile("<ellipse transform=\"translate(([^ ()\"]+) ([^ ()\"]+)) rotate(([^ ()\"]+))\" rx=\"([^ ()\"]+)\" ry=\"([^ ()\"]+)\" ")
+        pattern = re.compile("<ellipse transform=\"translate\(([^ ()\"]+) ([^ ()\"]+)\) rotate\(([^ ()\"]+)\)\" rx=\"([^ ()\"]+)\" ry=\"([^ ()\"]+)\" ")
         m = pattern.match(string)
         assert(m is not None)
         g = m.groups()
         assert(len(g) == 5)
         E = map(float, g)
         return decimate_ellipse_(E, delta)
-    elif string[:8] == "<ellipse cx":
+    elif string.startswith("<ellipse cx"):
         pattern = re.compile("<ellipse cx=\"([^\"]+)\" cy=\"([^\"]+)\" rx=\"([^\"]+)\" ry=\"([^\"]+)\"")
 
         m = pattern.match(string)
@@ -265,7 +265,7 @@ def main():
             break
         curves.append(parse_geometry_string_(line, delta))
 
-    raw = True
+    raw = False
     write_curves_(out_fname, curves, raw)
     
 if __name__ == "__main__":
